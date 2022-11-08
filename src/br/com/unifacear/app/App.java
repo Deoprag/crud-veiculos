@@ -10,9 +10,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.text.ParseException;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -23,6 +25,7 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.MaskFormatter;
 
 import br.com.unifacear.model.Veiculo;
 import br.com.unifacear.util.ArqTxt;
@@ -32,6 +35,9 @@ import java.awt.event.KeyEvent;
 import javax.swing.SwingConstants;
 import javax.swing.ImageIcon;
 import java.awt.Toolkit;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import javax.swing.JSeparator;
 
 @SuppressWarnings("serial")
 public class App extends JFrame{
@@ -66,14 +72,52 @@ public class App extends JFrame{
 		});
 	}
 	
+	public void limpar() {
+		txtPlaca.setText("AAA1234");
+		txtPlaca.setForeground(new Color(192, 192, 192));
+		
+		txtMarca.setText("Insira a marca");
+		txtMarca.setForeground(new Color(192, 192, 192));
+		
+		txtModelo.setText("Insira o modelo");
+		txtModelo.setForeground(new Color(192, 192, 192));
+		
+		txtAno.setText("2000");
+		txtAno.setForeground(new Color(192, 192, 192));
+	}
+	
+	public boolean ano() {
+		if(Short.parseShort(txtAno.getText()) > 2022){
+			JOptionPane.showMessageDialog(null, "Atenção! A data de fabricação deve ser menor que a atual");
+			return false;
+		}
+		if(Short.parseShort(txtAno.getText()) < 1950) {
+			JOptionPane.showMessageDialog(null, "Atenção! Data de fabricação muito antiga");
+			return false;
+		}
+		return true;
+	}
+	
+	public boolean vazio() {
+		if(txtPlaca.getText().replace("-", "").isBlank() == true || txtMarca.getText().isBlank() == true || txtModelo.getText().isBlank() == true || txtAno.getText().isBlank() == true) {
+			JOptionPane.showMessageDialog(null, "Atenção! Preencha todos os campos.");
+			return false;
+		}
+		if(txtPlaca.getForeground().equals(new Color(192, 192, 192)) || txtMarca.getForeground().equals(new Color(192, 192, 192)) || txtModelo.getForeground().equals(new Color(192, 192, 192)) || txtAno.getForeground().equals(new Color(192, 192, 192))) {
+			JOptionPane.showMessageDialog(null, "Atenção! Preencha todos os campos.");
+			return false;
+		}
+		return true;
+	}
+	
 	public void fechar() {
 		arq.excluir("Carros.txt");
 		ArqTxt arq = new ArqTxt("Carros.txt");
-		for (int i = 0; i < veiculos.size(); i++) {
-			arq.inserir(veiculos.get(i).getPlaca());
-			arq.inserir(veiculos.get(i).getMarca());
-			arq.inserir(veiculos.get(i).getModelo());
-			arq.inserir(Short.toString(veiculos.get(i).getAno()));
+		for (Veiculo veiculo : veiculos) {
+			arq.inserir(veiculo.getPlaca());
+			arq.inserir(veiculo.getMarca());
+			arq.inserir(veiculo.getModelo());
+			arq.inserir(Short.toString(veiculo.getAno()));
 		}
 		if (JOptionPane.showConfirmDialog(null, "Tem certeza que deseja sair?", "Sair?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
 			System.exit(0);
@@ -81,9 +125,9 @@ public class App extends JFrame{
 	}
 	
 	public boolean verPlaca(String placa) {
-		for (int i = 0; i < veiculos.size(); i++) {
-			if (veiculos.get(i).getPlaca().equals(placa)){
-				return false;
+			for (Veiculo veiculo : veiculos) {
+				if (veiculo.getPlaca().equals(placa)){
+					return false;
 			}
 		}
 		return true;
@@ -100,10 +144,10 @@ public class App extends JFrame{
 			tableDados.setValueAt(" ", i, 1);
 			tableDados.setValueAt(" ", i, 2);
 			tableDados.setValueAt(" ", i, 3);
-			tableDados.setValueAt(" ", i+1, 0);
-			tableDados.setValueAt(" ", i+1, 1);
-			tableDados.setValueAt(" ", i+1, 2);
-			tableDados.setValueAt(" ", i+1, 3);
+			tableDados.setValueAt(null, i+1, 0);
+			tableDados.setValueAt(null, i+1, 1);
+			tableDados.setValueAt(null, i+1, 2);
+			tableDados.setValueAt(null, i+1, 3);
 		}
 		for(int i = 0; i < veiculos.size() && veiculos.get(i) != null; i++) {
 			tableDados.setValueAt(veiculos.get(i).getPlaca(), i, 0);
@@ -131,47 +175,108 @@ public class App extends JFrame{
 		PanelOut.add(PanelLeftUp);
 		PanelLeftUp.setLayout(null);
 		
-		txtPlaca = new JTextField();
-		txtPlaca.setBounds(99, 267, 151, 42);
+		MaskFormatter mascaraPlaca = null;
+		MaskFormatter mascaraAno = null;
+		try {
+			mascaraPlaca = new MaskFormatter("UUU-#A##");
+			mascaraAno = new MaskFormatter("####");
+		} catch (ParseException e3) {
+			e3.printStackTrace();
+		}
+		
+		txtPlaca = new JFormattedTextField(mascaraPlaca);
+		txtPlaca.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusGained(FocusEvent e) {
+				if(txtPlaca.getForeground().equals(new Color(192,192,192))) {
+					txtPlaca.setText("");
+					txtPlaca.setForeground(new Color(0,0,0));
+				}
+			}
+		});
+		txtPlaca.setForeground(new Color(192, 192, 192));
+		txtPlaca.setBackground(new Color(255, 255, 255));
+		txtPlaca.setText("AAA1234");
+		txtPlaca.setBorder(null);
+		txtPlaca.setBounds(100, 270, 151, 30);
 		PanelLeftUp.add(txtPlaca);
-		txtPlaca.setFont(new Font("Arial", Font.PLAIN, 15));
+		txtPlaca.setFont(new Font("Segoe UI", Font.PLAIN, 15));
 		txtPlaca.setColumns(10);
 		
-		txtAno = new JTextField();
-		txtAno.setBounds(99, 423, 151, 42);
+		txtAno = new JFormattedTextField(mascaraAno);
+		txtAno.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusGained(FocusEvent e) {
+				if(txtAno.getForeground().equals(new Color(192,192,192))) {
+					txtAno.setText("");
+					txtAno.setForeground(new Color(0,0,0));
+				}
+			}
+		});
+		txtAno.setText("2000");
+		txtAno.setForeground(new Color(192, 192, 192));
+		txtAno.setBackground(new Color(255, 255, 255));
+		txtAno.setBorder(null);
+		txtAno.setBounds(100, 420, 70, 30);
 		PanelLeftUp.add(txtAno);
-		txtAno.setFont(new Font("Arial", Font.PLAIN, 15));
+		txtAno.setFont(new Font("Segoe UI", Font.PLAIN, 15));
 		txtAno.setColumns(10);
 		
 		txtModelo = new JTextField();
-		txtModelo.setBounds(99, 371, 151, 42);
+		txtModelo.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusGained(FocusEvent e) {
+				if(txtModelo.getForeground().equals(new Color(192,192,192))) {
+					txtModelo.setText("");
+					txtModelo.setForeground(new Color(0,0,0));
+				}
+			}
+		});
+		txtModelo.setForeground(new Color(192, 192, 192));
+		txtModelo.setBackground(new Color(255, 255, 255));
+		txtModelo.setText("Insira o modelo");
+		txtModelo.setBorder(null);
+		txtModelo.setBounds(100, 370, 151, 30);
 		PanelLeftUp.add(txtModelo);
-		txtModelo.setFont(new Font("Arial", Font.PLAIN, 15));
+		txtModelo.setFont(new Font("Segoe UI", Font.PLAIN, 15));
 		txtModelo.setColumns(10);
 		
 		txtMarca = new JTextField();
-		txtMarca.setBounds(99, 319, 151, 42);
+		txtMarca.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusGained(FocusEvent e) {
+				if(txtMarca.getForeground().equals(new Color(192,192,192))) {
+					txtMarca.setText("");
+					txtMarca.setForeground(new Color(0,0,0));
+				}
+			}
+		});
+		txtMarca.setForeground(new Color(192, 192, 192));
+		txtMarca.setBackground(new Color(255, 255, 255));
+		txtMarca.setText("Insira a marca");
+		txtMarca.setBorder(null);
+		txtMarca.setBounds(100, 320, 151, 30);
 		PanelLeftUp.add(txtMarca);
-		txtMarca.setFont(new Font("Arial", Font.PLAIN, 15));
+		txtMarca.setFont(new Font("Segoe UI", Font.PLAIN, 15));
 		txtMarca.setColumns(10);
 		
 		JLabel lblMarca = new JLabel("Marca");
-		lblMarca.setBounds(29, 318, 60, 42);
+		lblMarca.setBounds(19, 320, 60, 30);
 		PanelLeftUp.add(lblMarca);
 		lblMarca.setFont(new Font("Rubik", Font.PLAIN, 18));
 		
 		JLabel lblModelo = new JLabel("Modelo");
-		lblModelo.setBounds(19, 370, 70, 42);
+		lblModelo.setBounds(16, 370, 70, 30);
 		PanelLeftUp.add(lblModelo);
 		lblModelo.setFont(new Font("Rubik", Font.PLAIN, 18));
 		
 		JLabel lblPlaca = new JLabel("Placa");
-		lblPlaca.setBounds(29, 266, 60, 42);
+		lblPlaca.setBounds(19, 270, 60, 30);
 		PanelLeftUp.add(lblPlaca);
 		lblPlaca.setFont(new Font("Rubik", Font.PLAIN, 18));
 		
 		JLabel lblAno = new JLabel("Ano");
-		lblAno.setBounds(48, 422, 49, 42);
+		lblAno.setBounds(23, 420, 49, 30);
 		PanelLeftUp.add(lblAno);
 		lblAno.setFont(new Font("Rubik", Font.PLAIN, 18));
 		
@@ -188,6 +293,47 @@ public class App extends JFrame{
 		lblIcon.setHorizontalAlignment(SwingConstants.CENTER);
 		lblIcon.setBounds(0, 0, 240, 240);
 		panel.add(lblIcon);
+		
+		JSeparator separator = new JSeparator();
+		separator.setBounds(90, 300, 160, 30);
+		PanelLeftUp.add(separator);
+		
+		JSeparator separator_1 = new JSeparator();
+		separator_1.setBounds(90, 350, 160, 30);
+		PanelLeftUp.add(separator_1);
+		
+		JSeparator separator_1_1 = new JSeparator();
+		separator_1_1.setBounds(90, 400, 160, 30);
+		PanelLeftUp.add(separator_1_1);
+		
+		JSeparator separator_1_1_1 = new JSeparator();
+		separator_1_1_1.setBounds(90, 450, 80, 30);
+		PanelLeftUp.add(separator_1_1_1);
+		
+		JButton btnLimpar = new JButton("Limpar");
+		btnLimpar.setFocusable(false);
+		btnLimpar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				limpar();
+			}
+		});
+		btnLimpar.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				btnLimpar.setBackground(new Color(170,170,170));
+			}
+			@Override
+			public void mouseExited(MouseEvent e) {
+				btnLimpar.setBackground(new Color(192, 192, 192));
+			}
+		});
+		btnLimpar.setForeground(new Color(0, 0, 0));
+		btnLimpar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		btnLimpar.setFont(new Font("Rubik", Font.PLAIN, 11));
+		btnLimpar.setBackground(new Color(220,220,220));
+		btnLimpar.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
+		btnLimpar.setBounds(181, 418, 70, 38);
+		PanelLeftUp.add(btnLimpar);
 		
 		JPanel panelRight = new JPanel();
 		panelRight.setBackground(Color.WHITE);
@@ -222,19 +368,18 @@ public class App extends JFrame{
 			public void actionPerformed(ActionEvent e) {
 				try {
 					int pos = tableDados.getSelectedRow();
-					if (txtPlaca.getText() == veiculos.get(pos).getPlaca() && txtMarca.getText().isBlank() == false && txtModelo.getText().isBlank() == false && txtMarca.getText().isBlank() == false && txtAno.getText().isBlank() == false) {
-						veiculos.get(pos).setMarca(txtMarca.getText().toUpperCase());
-						veiculos.get(pos).setModelo(txtModelo.getText().toUpperCase());
-						veiculos.get(pos).setPlaca(txtPlaca.getText().toUpperCase());
-						veiculos.get(pos).setAno(Short.parseShort(txtAno.getText()));
-						exibe(cv);
-						JOptionPane.showMessageDialog(null, "Dados do veículo '" + txtPlaca.getText().toUpperCase() + "' foram atualizados com sucesso!");
-					} else if (txtPlaca.getText() != veiculos.get(pos).getPlaca()) {
+					if (!txtPlaca.getText().equals(veiculos.get(pos).getPlaca())) {
 						JOptionPane.showMessageDialog(null, "Você não pode alterar uma placa!");
-					}else {
-						JOptionPane.showMessageDialog(null, "Preencha todos os campos!");
+					} else if (vazio() == true) {
+						if(ano() == true) {
+							veiculos.get(pos).setMarca(txtMarca.getText().toUpperCase());
+							veiculos.get(pos).setModelo(txtModelo.getText().toUpperCase());
+							veiculos.get(pos).setPlaca(txtPlaca.getText().toUpperCase());
+							veiculos.get(pos).setAno(Short.parseShort(txtAno.getText()));
+							exibe(cv);
+							JOptionPane.showMessageDialog(null, "Dados do veículo '" + txtPlaca.getText().toUpperCase() + "' foram atualizados com sucesso!");
+						}
 					}
-					
 				} catch(Exception e2) {
 					e2.printStackTrace();
 					JOptionPane.showMessageDialog(null, "Não foi possivel alterar os dados do veículo!");
@@ -259,6 +404,7 @@ public class App extends JFrame{
 		btnAtualizar.setBackground(new Color(144, 238, 144));
 		
 		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setFont(new Font("Segoe UI", Font.PLAIN, 11));
 		scrollPane.setBounds(10, 10, 471, 350);
 		panelRight.add(scrollPane);
 		scrollPane.setBackground(Color.WHITE);
@@ -269,18 +415,30 @@ public class App extends JFrame{
 		tableDados.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				try {
-					int pos = tableDados.getSelectedRow();
-					txtPlaca.setText(tableDados.getValueAt(pos, 0).toString());
-					txtMarca.setText(tableDados.getValueAt(pos, 1).toString());
-					txtModelo.setText(tableDados.getValueAt(pos, 2).toString());
-					txtAno.setText(tableDados.getValueAt(pos, 3).toString());
-				} catch(Exception e1) {
-					e1.printStackTrace();
-					txtPlaca.setText("");
-					txtMarca.setText("");
-					txtModelo.setText("");
-					txtAno.setText("");
+				int x, y;
+				x = tableDados.getSelectedRow();
+				y = tableDados.getSelectedColumn();
+				if (tableDados.getValueAt(x,y) == null) {
+					JOptionPane.showMessageDialog(null, "Não é possível recuperar dados de um campo vazio!");
+				} else {
+					txtPlaca.setForeground(new Color(0,0,0));
+					txtMarca.setForeground(new Color(0,0,0));
+					txtModelo.setForeground(new Color(0,0,0));
+					txtAno.setForeground(new Color(0,0,0));
+	
+						try {
+							int pos = tableDados.getSelectedRow();
+							txtPlaca.setText(tableDados.getValueAt(pos, 0).toString());
+							txtMarca.setText(tableDados.getValueAt(pos, 1).toString());
+							txtModelo.setText(tableDados.getValueAt(pos, 2).toString());
+							txtAno.setText(tableDados.getValueAt(pos, 3).toString());
+						} catch(Exception e1) {
+							e1.printStackTrace();
+							txtPlaca.setText("");
+							txtMarca.setText("");
+							txtModelo.setText("");
+							txtAno.setText("");
+						}
 				}
 			}
 		});
@@ -288,7 +446,7 @@ public class App extends JFrame{
 		tableDados.setForeground(Color.BLACK);
 		tableDados.setBackground(new Color(245, 245, 245));
 		tableDados.setBorder(new LineBorder(new Color(0, 0, 0)));
-		tableDados.setFont(new Font("Arial", Font.PLAIN, 12));
+		tableDados.setFont(new Font("Segoe UI", Font.PLAIN, 12));
 		tableDados.setRowHeight(30);
 		tableDados.setModel(new DefaultTableModel(
 			new Object[][] {
@@ -347,21 +505,23 @@ public class App extends JFrame{
 				"Placa", "Marca", "Modelo", "Ano"
 			}
 		) {
+			@SuppressWarnings("rawtypes")
 			Class[] columnTypes = new Class[] {
 				String.class, String.class, String.class, Short.class
 			};
+			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public Class getColumnClass(int columnIndex) {
 				return columnTypes[columnIndex];
 			}
 			boolean[] columnEditables = new boolean[] {
-				false, true, true, true
+				false, false, false, false
 			};
 			public boolean isCellEditable(int row, int column) {
 				return columnEditables[column];
 			}
 		});
 		tableDados.getColumnModel().getColumn(0).setResizable(false);
-		tableDados.getColumnModel().getColumn(0).setPreferredWidth(20);
+		tableDados.getColumnModel().getColumn(0).setPreferredWidth(30);
 		tableDados.getColumnModel().getColumn(0).setMinWidth(10);
 		tableDados.getColumnModel().getColumn(1).setResizable(false);
 		tableDados.getColumnModel().getColumn(2).setResizable(false);
@@ -395,27 +555,23 @@ public class App extends JFrame{
 			public void actionPerformed(ActionEvent e) {
 				Veiculo veiculo = new Veiculo();
 				try {
-					if (txtMarca.getText().isBlank() == false && txtModelo.getText().isBlank() == false && txtMarca.getText().isBlank() == false && txtAno.getText().isBlank() == false) {
-						if (verPlaca(txtPlaca.getText().toUpperCase()) == true) {
-							veiculo.setMarca(txtMarca.getText().toUpperCase());
-							veiculo.setModelo(txtModelo.getText().toUpperCase());
-							veiculo.setPlaca(txtPlaca.getText().toUpperCase());
-							veiculo.setAno(Short.parseShort(txtAno.getText()));
-							veiculo.setAtivo(true);
-							if(cv.salvar(veiculo) == true) {
-								JOptionPane.showMessageDialog(null, "Veículo '" + txtPlaca.getText() + "' cadastrado com sucesso!");
-								txtAno.setText("");
-								txtMarca.setText("");
-								txtModelo.setText("");
-								txtPlaca.setText("");
-								txtMarca.requestFocus();
-								exibe(cv);
+					if (vazio() == true) {
+						if (ano() == true) {
+							if (verPlaca(txtPlaca.getText().toUpperCase()) == true) {
+								veiculo.setMarca(txtMarca.getText().toUpperCase());
+								veiculo.setModelo(txtModelo.getText().toUpperCase());
+								veiculo.setPlaca(txtPlaca.getText().toUpperCase());
+								veiculo.setAno(Short.parseShort(txtAno.getText()));
+								veiculo.setAtivo(true);
+								if(cv.salvar(veiculo) == true) {
+									JOptionPane.showMessageDialog(null, "Veículo '" + txtPlaca.getText() + "' cadastrado com sucesso!");
+									limpar();
+									exibe(cv);
+								}
+							} else {
+								JOptionPane.showMessageDialog(null, "Placa '" + txtPlaca.getText() + "' já cadastrada no sistema!");
 							}
-						} else {
-							JOptionPane.showMessageDialog(null, "Placa '" + txtPlaca.getText() + "' já cadastrada no sistema!");
 						}
-					} else {
-						JOptionPane.showMessageDialog(null, "Preencha todos os campos!");
 					}
 				} catch (Exception e2) {
 					e2.printStackTrace();
@@ -432,10 +588,11 @@ public class App extends JFrame{
 					if (JOptionPane.showConfirmDialog(null, "Tem certeza que deseja excluir o veículo '" + veiculos.get(pos).getPlaca() + "'?", "CONFIRME", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
 						JOptionPane.showMessageDialog(null, "Veículo '" + veiculos.get(pos).getPlaca() + "' foi removido com sucesso!");
 						veiculos.remove(pos);
-						tableDados.setValueAt("", pos, 0);
-						tableDados.setValueAt("", pos, 1);
-						tableDados.setValueAt("", pos, 2);
-						tableDados.setValueAt("", pos, 3);
+						tableDados.setValueAt(null, pos, 0);
+						tableDados.setValueAt(null, pos, 1);
+						tableDados.setValueAt(null, pos, 2);
+						tableDados.setValueAt(null, pos, 3);
+						limpar();
 					}
 				} catch (Exception e1) {
 					e1.printStackTrace();
