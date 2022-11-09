@@ -38,6 +38,7 @@ import java.awt.Toolkit;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import javax.swing.JSeparator;
+import javax.swing.ScrollPaneConstants;
 
 @SuppressWarnings("serial")
 public class App extends JFrame{
@@ -51,6 +52,7 @@ public class App extends JFrame{
 	private JTextField txtModelo;
 	private JTextField txtPlaca;
 	private JTextField txtAno;
+	private JButton btnLimpar;
 	private JTable tableDados;
 
 	public static void main(String[] args) {
@@ -73,6 +75,7 @@ public class App extends JFrame{
 	}
 	
 	public void limpar() {
+		
 		txtPlaca.setText("AAA1234");
 		txtPlaca.setForeground(new Color(192, 192, 192));
 		
@@ -84,6 +87,7 @@ public class App extends JFrame{
 		
 		txtAno.setText("2000");
 		txtAno.setForeground(new Color(192, 192, 192));
+		
 	}
 	
 	public boolean ano() {
@@ -164,7 +168,7 @@ public class App extends JFrame{
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 800, 530);
 		PanelOut = new JPanel();
-		PanelOut.setBackground(Color.DARK_GRAY);
+		PanelOut.setBackground(new Color(0, 0, 0));
 		PanelOut.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(PanelOut);
 		PanelOut.setLayout(null);
@@ -331,12 +335,12 @@ public class App extends JFrame{
 		btnLimpar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		btnLimpar.setFont(new Font("Rubik", Font.PLAIN, 11));
 		btnLimpar.setBackground(new Color(220,220,220));
-		btnLimpar.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
+		btnLimpar.setBorder(new LineBorder(new Color(60, 60, 60), 2, true));
 		btnLimpar.setBounds(181, 418, 70, 38);
 		PanelLeftUp.add(btnLimpar);
 		
 		JPanel panelRight = new JPanel();
-		panelRight.setBackground(Color.WHITE);
+		panelRight.setBackground(new Color(255, 255, 255));
 		panelRight.setBounds(288, 8, 488, 475);
 		PanelOut.add(panelRight);
 		panelRight.setLayout(null);
@@ -353,16 +357,16 @@ public class App extends JFrame{
 			}
 		});
 		btnExcluir.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		btnExcluir.setBounds(189, 395, 107, 42);
+		btnExcluir.setBounds(189, 422, 107, 42);
 		panelRight.add(btnExcluir);
 		btnExcluir.setForeground(Color.BLACK);
 		btnExcluir.setFont(new Font("Rubik", Font.PLAIN, 18));
 		btnExcluir.setFocusPainted(false);
-		btnExcluir.setBorder(new LineBorder(new Color(0, 0, 0), 2));
+		btnExcluir.setBorder(new LineBorder(new Color(60, 0, 0), 2, true));
 		btnExcluir.setBackground(new Color(250, 128, 114));
 		
 		JButton btnAtualizar = new JButton("Atualizar");
-		btnAtualizar.setBounds(337, 395, 107, 42);
+		btnAtualizar.setBounds(337, 422, 107, 42);
 		panelRight.add(btnAtualizar);
 		btnAtualizar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -400,12 +404,13 @@ public class App extends JFrame{
 		btnAtualizar.setForeground(Color.BLACK);
 		btnAtualizar.setFont(new Font("Rubik", Font.PLAIN, 18));
 		btnAtualizar.setFocusPainted(false);
-		btnAtualizar.setBorder(new LineBorder(new Color(0, 0, 0), 2));
+		btnAtualizar.setBorder(new LineBorder(new Color(0, 60, 0), 2, true));
 		btnAtualizar.setBackground(new Color(144, 238, 144));
 		
 		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		scrollPane.setBounds(10, 10, 471, 350);
+		scrollPane.setBounds(10, 10, 471, 400);
 		panelRight.add(scrollPane);
 		scrollPane.setBackground(Color.WHITE);
 		scrollPane.setViewportBorder(new LineBorder(new Color(0, 0, 0), 1, true));
@@ -505,11 +510,9 @@ public class App extends JFrame{
 				"Placa", "Marca", "Modelo", "Ano"
 			}
 		) {
-			@SuppressWarnings("rawtypes")
 			Class[] columnTypes = new Class[] {
 				String.class, String.class, String.class, Short.class
 			};
-			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public Class getColumnClass(int columnIndex) {
 				return columnTypes[columnIndex];
 			}
@@ -532,7 +535,7 @@ public class App extends JFrame{
 		scrollPane.setViewportView(tableDados);
 		
 		JButton btnCadastro = new JButton("Cadastrar");
-		btnCadastro.setBounds(41, 395, 107, 42);
+		btnCadastro.setBounds(41, 422, 107, 42);
 		panelRight.add(btnCadastro);
 		btnCadastro.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		btnCadastro.addMouseListener(new MouseAdapter() {
@@ -549,7 +552,7 @@ public class App extends JFrame{
 		btnCadastro.setForeground(Color.BLACK);
 		btnCadastro.setFont(new Font("Rubik", Font.PLAIN, 18));
 		btnCadastro.setFocusPainted(false);
-		btnCadastro.setBorder(new LineBorder(new Color(0, 0, 0), 2));
+		btnCadastro.setBorder(new LineBorder(new Color(0, 0, 60), 2, true));
 		btnCadastro.setBackground(new Color(210, 250, 255));
 		btnCadastro.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -605,8 +608,8 @@ public class App extends JFrame{
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER){
-	                btnCadastro.doClick();
-               }
+					btnCadastro.doClick();
+				}
 			}
 		});
 		exibe(cv);
