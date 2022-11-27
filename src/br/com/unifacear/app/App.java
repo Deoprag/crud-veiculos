@@ -48,6 +48,7 @@ public class App extends JFrame{
 	List<Veiculo> veiculos = cv.retorna();
 
 	private JPanel PanelOut;
+	private DefaultTableModel model;
 	private JTextField txtMarca;
 	private JTextField txtModelo;
 	private JTextField txtPlaca;
@@ -143,21 +144,13 @@ public class App extends JFrame{
 	}
 	
 	private void exibeInfos() {
-		for(int i = 0; i < veiculos.size(); i++) {
-			tableDados.setValueAt(" ", i, 0);
-			tableDados.setValueAt(" ", i, 1);
-			tableDados.setValueAt(" ", i, 2);
-			tableDados.setValueAt(" ", i, 3);
-			tableDados.setValueAt(null, i+1, 0);
-			tableDados.setValueAt(null, i+1, 1);
-			tableDados.setValueAt(null, i+1, 2);
-			tableDados.setValueAt(null, i+1, 3);
+		try {
+			model.getDataVector().removeAllElements();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		for(int i = 0; i < veiculos.size() && veiculos.get(i) != null; i++) {
-			tableDados.setValueAt(veiculos.get(i).getPlaca(), i, 0);
-			tableDados.setValueAt(veiculos.get(i).getMarca(), i, 1);
-			tableDados.setValueAt(veiculos.get(i).getModelo(), i, 2);
-			tableDados.setValueAt(veiculos.get(i).getAno(), i, 3);
+			model.addRow(new Object[]{veiculos.get(i).getPlaca(), veiculos.get(i).getMarca(), veiculos.get(i).getModelo(), veiculos.get(i).getAno()});
 		}
 	}
 	
@@ -415,7 +408,12 @@ public class App extends JFrame{
 		scrollPane.setBackground(Color.WHITE);
 		scrollPane.setViewportBorder(new LineBorder(new Color(0, 0, 0), 1, true));
 		
-		tableDados = new JTable();
+		model = new DefaultTableModel(); 
+		model.addColumn("Placa");
+		model.addColumn("Marca");
+		model.addColumn("Modelo");
+		model.addColumn("Ano");
+		tableDados = new JTable(model);
 		tableDados.setToolTipText("");
 		tableDados.addMouseListener(new MouseAdapter() {
 			@Override
@@ -453,76 +451,6 @@ public class App extends JFrame{
 		tableDados.setBorder(new LineBorder(new Color(0, 0, 0)));
 		tableDados.setFont(new Font("Segoe UI", Font.PLAIN, 12));
 		tableDados.setRowHeight(30);
-		tableDados.setModel(new DefaultTableModel(
-			new Object[][] {
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-			},
-			new String[] {
-				"Placa", "Marca", "Modelo", "Ano"
-			}
-		) {
-			Class[] columnTypes = new Class[] {
-				String.class, String.class, String.class, Short.class
-			};
-			public Class getColumnClass(int columnIndex) {
-				return columnTypes[columnIndex];
-			}
-			boolean[] columnEditables = new boolean[] {
-				false, false, false, false
-			};
-			public boolean isCellEditable(int row, int column) {
-				return columnEditables[column];
-			}
-		});
 		tableDados.getColumnModel().getColumn(0).setResizable(false);
 		tableDados.getColumnModel().getColumn(0).setPreferredWidth(30);
 		tableDados.getColumnModel().getColumn(0).setMinWidth(10);
